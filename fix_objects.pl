@@ -9,9 +9,7 @@ use JSON::XS;
 use warnings;
 use strict;
 
-use constant DB_NAME   => 'epoch';
-use constant DB_LOGIN  => 'dayz';
-use constant DB_PASSWD => 'dayz';
+use server_config qw( DB_NAME DB_HOST DB_PORT DB_LOGIN DB_PASSWD );
 
 my $coder = JSON::XS->new->ascii(1)->shrink(1)->allow_nonref(1)->max_depth(5)->max_size(1048576);
 
@@ -37,21 +35,21 @@ sub connect_to_db {
 sub parse_json {
     my $str = shift;
     return unless $str;
-    
+
     my $data;
     eval { $data = $coder->decode ($str); };
     print $@,"\n" if $@;
     return if $@;
-    
+
     return $data;
 }
 
 sub parse {
-    my $sql = 'SELECT ObjectID, Classname, Worldspace, Inventory, Hitpoints FROM Object_DATA';    
+    my $sql = 'SELECT ObjectID, Classname, Worldspace, Inventory, Hitpoints FROM Object_DATA';
     my $sth = $dbh->prepare ($sql);
     my $res = $sth->execute ();
     return unless $res;
-    
+
     my $c = 0;
     my %oids = ();
     while (my ($oid, $name, $worldSpace, $inventory, $hitpoints) = $sth->fetchrow_array) {
@@ -79,10 +77,10 @@ sub parse {
         $c++;
     }
     $sth->finish;
-    
+
     print STDERR "Total: $c, Corrupted: ".scalar(keys %oids)."\n";
     return unless %oids;
-        
+
     while (my ($oid, $field) = each %oids) {
         $dbh->do ('UPDATE Object_DATA SET '.$field.'=\'[]\' WHERE ObjectID='.$oid);
     }

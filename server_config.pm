@@ -3,6 +3,8 @@ use warnings;
 
 package server_config;
 
+# Environment variabl prefix
+
 # Mission Instance
 use constant INSTANCE   => 11; # Chernarus instance
 
